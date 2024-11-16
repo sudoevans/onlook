@@ -7,16 +7,24 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { getPreviewImage } from '../../helpers';
 import EditAppButton from './EditAppButton';
 import type { Project } from '@onlook/models/projects';
+import DissolveAnimation from './DissolveAnimation';
 
 interface EmblaCarouselProps {
     slides: Project[];
     onSlideChange: (index: number) => void;
+    onProjectDelete: (project: Project) => void;
+    deletingProjectId: string | null;
 }
 
 const numberWithinRange = (number: number, min: number, max: number): number =>
     Math.min(Math.max(number, min), max);
 
-const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) => {
+const EmblaCarousel: React.FC<EmblaCarouselProps> = ({
+    slides,
+    onSlideChange,
+    onProjectDelete,
+    deletingProjectId,
+}) => {
     const WHEEL_SENSITIVITY = 13;
     const SCROLL_COOLDOWN = 100;
     const TWEEN_FACTOR_BASE = 0.3;
@@ -227,6 +235,38 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
         };
     }, []);
 
+    useEffect(() => {
+        if (!emblaApi || !deletingProjectId) {
+            return;
+        }
+
+        const currentIndex = emblaApi.selectedScrollSnap();
+        const deletingIndex = slides.findIndex((slide) => slide.id === deletingProjectId);
+
+        if (deletingIndex === currentIndex) {
+            const nextIndex =
+                currentIndex === slides.length - 1
+                    ? currentIndex - 1 // If last slide, go to previous
+                    : currentIndex; // Otherwise stay at same index (next slide will shift up)
+
+            setTimeout(() => {
+                emblaApi.scrollTo(nextIndex, true); // true enables smooth animation
+            }, 200);
+        }
+    }, [deletingProjectId, emblaApi, slides]);
+
+    const handleProjectDelete = useCallback(
+        (project: Project) => {
+            onProjectDelete(project);
+            if (emblaApi) {
+                setTimeout(() => {
+                    emblaApi.reInit();
+                }, 0);
+            }
+        },
+        [emblaApi, onProjectDelete],
+    );
+
     return (
         <div
             className="embla relative h-[calc(100vh-5.5rem)] overflow-hidden"
@@ -256,26 +296,44 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
                                 marginTop: index === 0 ? '6rem' : '-3rem',
                                 marginBottom: index === slides.length - 1 ? '6rem' : '-3rem',
                                 opacity: index === currentIndex ? 1 : 0.6,
+                                transition: 'opacity 0.3s ease-in-out',
                             }}
                         >
-                            {previewImages[slide.id] ? (
-                                <img
-                                    src={previewImages[slide.id]}
-                                    alt={slide.name}
-                                    className="rounded-lg object-cover max-w-full max-h-[80%] bg-foreground border-[0.5px]"
-                                />
-                            ) : (
-                                <div className="w-[30rem] h-[40rem] rounded-lg bg-gradient-to-t from-gray-800/40 via-gray-500/40 to-gray-400/40 border-gray-500 border-[0.5px]" />
-                            )}
-                            <motion.div
-                                initial="rest"
-                                whileHover="hover"
-                                animate="rest"
-                                variants={containerVariants}
-                                className="rounded-lg absolute flex items-center justify-center w-full h-full z-10 bg-background/30 "
-                            >
-                                <EditAppButton variants={buttonVariants} project={slide} />
-                            </motion.div>
+                            <div className="relative w-full h-full">
+                                {deletingProjectId === slide.id ? (
+                                    <DissolveAnimation
+                                        previewImage={previewImages[slide.id]}
+                                        onAnimationComplete={() => handleProjectDelete(slide)}
+                                        className="w-full h-full"
+                                    />
+                                ) : (
+                                    <>
+                                        {previewImages[slide.id] ? (
+                                            <div className="relative">
+                                                <img
+                                                    src={previewImages[slide.id]}
+                                                    alt={slide.name}
+                                                    className="rounded-lg object-cover max-w-full max-h-[80%] bg-foreground border-[0.5px]"
+                                                />
+                                                <motion.div
+                                                    initial="rest"
+                                                    whileHover="hover"
+                                                    animate="rest"
+                                                    variants={containerVariants}
+                                                    className="rounded-lg absolute inset-0 flex items-center justify-center bg-background/30"
+                                                >
+                                                    <EditAppButton
+                                                        variants={buttonVariants}
+                                                        project={slide}
+                                                    />
+                                                </motion.div>
+                                            </div>
+                                        ) : (
+                                            <div className="w-[30rem] h-[40rem] rounded-lg bg-gradient-to-t from-gray-800/40 via-gray-500/40 to-gray-400/40 border-gray-500 border-[0.5px]" />
+                                        )}
+                                    </>
+                                )}
+                            </div>
                         </div>
                     ))}
                 </div>

@@ -4,11 +4,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 interface DissolveAnimationProps {
     onAnimationComplete: () => void;
     previewImage: string;
+    className?: string;
 }
 
 export default function DissolveAnimation({
     onAnimationComplete,
     previewImage,
+    className,
 }: DissolveAnimationProps) {
     const [isAnimating, setIsAnimating] = useState(true);
     const displayedImageRef = useRef<HTMLImageElement>(null);
@@ -58,11 +60,7 @@ export default function DissolveAnimation({
     return (
         <AnimatePresence>
             {isAnimating && (
-                <motion.div
-                    initial={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm"
-                >
+                <motion.div initial={{ opacity: 1 }} exit={{ opacity: 0 }} className={className}>
                     <svg xmlns="http://www.w3.org/2000/svg" className="hidden">
                         <defs>
                             <filter
@@ -106,18 +104,16 @@ export default function DissolveAnimation({
                         </defs>
                     </svg>
 
-                    <div className="relative w-[500px] max-w-[90vw] h-[500px] bg-black overflow-visible rounded-3xl">
-                        <img
-                            ref={displayedImageRef}
-                            src={previewImage}
-                            alt="Project being deleted"
-                            className="w-full h-full object-cover rounded-3xl"
-                            style={{
-                                filter: 'url(#dissolve-filter)',
-                                WebkitFilter: 'url(#dissolve-filter)',
-                            }}
-                        />
-                    </div>
+                    <img
+                        ref={displayedImageRef}
+                        src={previewImage}
+                        alt="Project being deleted"
+                        className="w-full h-full object-cover rounded-lg"
+                        style={{
+                            filter: 'url(#dissolve-filter)',
+                            WebkitFilter: 'url(#dissolve-filter)',
+                        }}
+                    />
                 </motion.div>
             )}
         </AnimatePresence>

@@ -5,7 +5,13 @@ import ProjectSettingsButton from './ProjectSettingsButton';
 import { timeSince } from '/common/helpers';
 import type { Project } from '@onlook/models/projects';
 
-const ProjectInfo = observer(({ project, direction }: { project: Project; direction: number }) => {
+interface ProjectInfoProps {
+    project: Project;
+    direction: number;
+    onDeleteStart: (projectId: string) => void;
+}
+
+const ProjectInfo = observer(({ project, direction, onDeleteStart }: ProjectInfoProps) => {
     const variants = {
         enter: (direction: number) => ({
             y: direction > 0 ? 20 : -20,
@@ -44,7 +50,7 @@ const ProjectInfo = observer(({ project, direction }: { project: Project; direct
                 </div>
                 <div className="flex flex-col sm:flex-row gap-3 sm:gap-5 w-full">
                     <EditAppButton project={project} />
-                    <ProjectSettingsButton project={project} />
+                    <ProjectSettingsButton project={project} onDeleteStart={onDeleteStart} />
                 </div>
             </>
         )

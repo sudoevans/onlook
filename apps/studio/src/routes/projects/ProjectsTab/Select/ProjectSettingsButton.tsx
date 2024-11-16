@@ -24,35 +24,29 @@ import { Label } from '@onlook/ui/label';
 import { toast } from '@onlook/ui/use-toast';
 import { cn } from '@onlook/ui/utils';
 import { useEffect, useMemo, useState } from 'react';
-import DissolveAnimation from './DissolveAnimation';
 
-export default function ProjectSettingsButton({ project }: { project: Project }) {
+interface ProjectSettingsButtonProps {
+    project: Project;
+    onDeleteStart: (projectId: string) => void;
+}
+
+export default function ProjectSettingsButton({
+    project,
+    onDeleteStart,
+}: ProjectSettingsButtonProps) {
     const projectsManager = useProjectsManager();
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [showRenameDialog, setShowRenameDialog] = useState(false);
     const [projectName, setProjectName] = useState(project.name);
     const isProjectNameEmpty = useMemo(() => projectName.length === 0, [projectName]);
-    const [showDissolveAnimation, setShowDissolveAnimation] = useState(false);
-    const [previewImage, setPreviewImage] = useState<string | null>(null);
 
     useEffect(() => {
         setProjectName(project.name);
     }, [project.name]);
 
-    const handleDeleteProject = async () => {
+    const handleDeleteProject = () => {
         setShowDeleteDialog(false);
-
-        if (project.previewImg) {
-            const img = await getPreviewImage(project.previewImg);
-            if (img) {
-                setPreviewImage(img);
-                setShowDissolveAnimation(true);
-                return;
-            }
-        }
-
-        // If no preview image, delete immediately
-        projectsManager.deleteProject(project);
+        onDeleteStart(project.id);
     };
 
     const handleRenameProject = () => {
@@ -185,15 +179,6 @@ export default function ProjectSettingsButton({ project }: { project: Project })
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-            {showDissolveAnimation && previewImage && (
-                <DissolveAnimation
-                    previewImage={previewImage}
-                    onAnimationComplete={() => {
-                        setShowDissolveAnimation(false);
-                        projectsManager.deleteProject(project);
-                    }}
-                />
-            )}
         </>
     );
 }
