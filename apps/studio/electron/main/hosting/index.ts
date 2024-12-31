@@ -1,51 +1,16 @@
 import { MainChannels } from '@onlook/models/constants';
-import {
-    DeployState,
-    VersionStatus,
-    type CreateEnvOptions,
-    type DeploymentStatus,
-} from '@onlook/models/hosting';
-import { PreviewEnvironmentClient, SupportedFrameworks } from '@zonke-cloud/sdk';
+import { DeployState, VersionStatus, type DeploymentStatus } from '@onlook/models/hosting';
 import { exec } from 'node:child_process';
 import { mainWindow } from '..';
 import { PersistentStorage } from '../storage';
-const MOCK_ENV = {
-    endpoint: 'o95ewhbkzx.preview.zonke.market',
-    environmentId: '850540f8-a168-43a6-9772-6a1727d73b93',
-    versions: [
-        {
-            message: 'Testing',
-            environmentId: '850540f8-a168-43a6-9772-6a1727d73b93',
-            buildOutputDirectory: '/Users/kietho/workplace/onlook/test/docs/.next',
-        },
-    ],
-};
 
 class HostingManager {
     private static instance: HostingManager;
-
-    private zonke: PreviewEnvironmentClient;
     private userId: string | null = null;
     private state: DeployState = DeployState.NONE;
 
     private constructor() {
         this.restoreSettings();
-        this.zonke = this.initZonkeClient();
-    }
-
-    initZonkeClient() {
-        if (
-            !import.meta.env.VITE_ZONKE_API_KEY ||
-            !import.meta.env.VITE_ZONKE_API_TOKEN ||
-            !import.meta.env.VITE_ZONKE_API_ENDPOINT
-        ) {
-            throw new Error('Zonke API key, token, and endpoint must be set');
-        }
-        return new PreviewEnvironmentClient({
-            apiKey: import.meta.env.VITE_ZONKE_API_KEY,
-            apiToken: import.meta.env.VITE_ZONKE_API_TOKEN,
-            apiEndpoint: import.meta.env.VITE_ZONKE_API_ENDPOINT,
-        });
     }
 
     public static getInstance(): HostingManager {
@@ -58,22 +23,6 @@ class HostingManager {
     private restoreSettings() {
         const settings = PersistentStorage.USER_SETTINGS.read() || {};
         this.userId = settings.id || null;
-    }
-
-    createEnv(options: CreateEnvOptions) {
-        if (this.userId === null) {
-            console.error('User ID not found');
-            return;
-        }
-
-        const framework = options.framework as SupportedFrameworks;
-        const awsHostedZone = 'zonke.market';
-
-        return this.zonke.createPreviewEnvironment({
-            userId: this.userId,
-            framework,
-            awsHostedZone,
-        });
     }
 
     async getEnv(envId: string) {
@@ -110,6 +59,7 @@ class HostingManager {
                 buildOutputDirectory: BUILD_OUTPUT_PATH,
             });
 
+            console.log('Version', version);
             this.pollDeploymentStatus(envId, version.versionId);
             return version;
         } catch (error) {
@@ -128,11 +78,11 @@ class HostingManager {
             try {
                 const status = await this.getDeploymentStatus(envId, versionId);
 
-                if (status.status === VersionStatus.SUCCEEDED) {
+                if (status === VersionStatus.SUCCESS) {
                     clearInterval(intervalId);
                     const env = await this.getEnv(envId);
                     this.setState(DeployState.DEPLOYED, 'Deployment successful', env?.endpoint);
-                } else if (status.status === VersionStatus.FAILED) {
+                } else if (status === VersionStatus.FAILED) {
                     clearInterval(intervalId);
                     this.setState(DeployState.ERROR, 'Deployment failed');
                 } else if (Date.now() - startTime > timeout) {
@@ -141,7 +91,7 @@ class HostingManager {
                 }
             } catch (error) {
                 clearInterval(intervalId);
-                this.setState(DeployState.ERROR, 'Failed to check deployment status');
+                this.setState(DeployState.ERROR, `Failed to check deployment status: ${error}`);
             }
         }, interval);
 
@@ -150,11 +100,8 @@ class HostingManager {
         }, timeout);
     }
 
-    async getDeploymentStatus(envId: string, versionId: string) {
-        return await this.zonke.getDeploymentStatus({
-            environmentId: envId,
-            sourceVersion: versionId,
-        });
+    async getDeploymentStatus(envId: string, versionId: string): Promise<VersionStatus> {
+        return VersionStatus.IN_PROGRESS;
     }
 
     runBuildScript(folderPath: string, buildScript: string): Promise<boolean> {
@@ -167,15 +114,16 @@ class HostingManager {
                 (error: Error | null, stdout: string, stderr: string) => {
                     if (error) {
                         console.error(`Build script error: ${error}`);
+                        this.setState(DeployState.ERROR, `Build script error: ${error}`);
                         resolve(false);
                         return;
                     }
 
                     if (stderr) {
                         console.warn(`Build script stderr: ${stderr}`);
+                        this.setState(DeployState.ERROR, `Build script stderr: ${stderr}`);
                     }
-
-                    console.log(`Build script output: ${stdout}`);
+                    this.setState(DeployState.BUILDING, 'Build successful with output: ', stdout);
                     resolve(true);
                 },
             );

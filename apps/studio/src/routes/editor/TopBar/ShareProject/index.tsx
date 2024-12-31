@@ -61,20 +61,25 @@ const ShareProject = observer(() => {
 
             <Dialog open={isOpen} onOpenChange={setIsOpen}>
                 <DialogContent className="sm:max-w-[425px] bg-background border border-background-tertiary">
+                    <textarea
+                        className="user-select-all text-smallPlus text-white bg-black border"
+                        value={hosting?.state}
+                        readOnly
+                    />
+                    <textarea
+                        className="user-select-all text-smallPlus text-white bg-black border"
+                        value={JSON.stringify(hosting?.message)}
+                        readOnly
+                    />
+                    <textarea
+                        className="user-select-all text-smallPlus text-white bg-black border"
+                        value={JSON.stringify(hosting?.env)}
+                        readOnly
+                    />
                     <DialogHeader>
                         <DialogTitle className="text-foreground-primary text-title3">
                             {env ? 'Public link' : 'Share public link'}
                         </DialogTitle>
-                        <input
-                            className="user-select-all text-smallPlus text-foreground-secondary"
-                            value={hosting?.state}
-                            readOnly
-                        />
-                        <input
-                            className="user-select-all text-smallPlus text-foreground-secondary"
-                            value={JSON.stringify(hosting?.env)}
-                            readOnly
-                        />
                     </DialogHeader>
 
                     <AnimatePresence mode="wait">
@@ -109,13 +114,11 @@ const ShareProject = observer(() => {
 
                                 <div className="space-y-4">
                                     <div className="flex items-center gap-2">
-                                        <div className="flex-1 flex items-center bg-background rounded-md border border-background-tertiary h-9">
-                                            <input
-                                                className="w-full text-sm text-foreground-secondary truncate px-2 bg-transparent border-none outline-none"
-                                                value={endpoint}
-                                                readOnly
-                                            />
-                                        </div>
+                                        <input
+                                            value={endpoint}
+                                            readOnly
+                                            className="flex-1 flex items-center bg-background rounded-md border border-background-tertiary h-9 w-full text-sm text-foreground-secondary truncate px-2"
+                                        />
                                         <Button
                                             variant="outline"
                                             onClick={handleCopyUrl}

@@ -23,7 +23,7 @@ export class HostingManager {
             '850540f8-a168-43a6-9772-6a1727d73b93',
             'eYu9codOymFSFLt6e634lu073BkaWSQo',
         );
-        console.log(res);
+        console.log('State change', res);
 
         window.api.on(MainChannels.DEPLOY_STATE_CHANGED, async (args) => {
             const { state, message } = args as { state: DeployState; message: string };
