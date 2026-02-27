@@ -1,16 +1,15 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { motion } from 'motion/react';
 
 import { Button } from '@onlook/ui/button';
+import { Icons } from '@onlook/ui/icons';
 
-import { ExternalRoutes, Routes } from '@/utils/constants';
+import { ExternalRoutes } from '@/utils/constants';
 import { useGitHubStats } from '../top-bar/github';
 import { UnicornBackground } from './unicorn-background';
 
-export function FeaturesHero() {
-    const router = useRouter();
+export function ClaudeCodeHero() {
     const { formatted: starCount } = useGitHubStats();
 
     return (
@@ -24,16 +23,16 @@ export function FeaturesHero() {
                     transition={{ duration: 0.6, ease: 'easeOut' }}
                     style={{ willChange: 'opacity, filter', transform: 'translateZ(0)' }}
                 >
-                    Features
+                    Workflows
                 </motion.h1>
                 <motion.p
-                    className="text-center text-4xl !leading-[1] leading-tight font-light text-balance md:text-6xl"
+                    className="text-center text-4xl !leading-[1.1] leading-tight font-light text-balance md:text-6xl"
                     initial={{ opacity: 0, filter: 'blur(4px)' }}
                     animate={{ opacity: 1, filter: 'blur(0px)' }}
                     transition={{ duration: 0.6, delay: 0.1, ease: 'easeOut' }}
                     style={{ willChange: 'opacity, filter', transform: 'translateZ(0)' }}
                 >
-                    Design with Your Real Components
+                    Claude Code for Designers
                 </motion.p>
                 <motion.h2
                     className="text-foreground-secondary mx-auto max-w-xl text-center text-lg text-balance"
@@ -42,10 +41,10 @@ export function FeaturesHero() {
                     transition={{ duration: 0.6, delay: 0.15, ease: 'easeOut' }}
                     style={{ willChange: 'opacity, filter', transform: 'translateZ(0)' }}
                 >
-                    Connect your codebase. Design on the canvas. Ship PRs.
+                    The visual canvas your AI workflow is missing. Claude Code builds it. Onlook lets you design it.
                 </motion.h2>
                 <motion.div
-                    className="mt-8"
+                    className="mt-8 flex flex-row gap-4"
                     initial={{ opacity: 0, filter: 'blur(4px)' }}
                     animate={{ opacity: 1, filter: 'blur(0px)' }}
                     transition={{ duration: 0.6, delay: 0.3, ease: 'easeOut' }}
@@ -53,12 +52,12 @@ export function FeaturesHero() {
                 >
                     <Button
                         asChild
-                        variant="secondary"
                         size="lg"
-                        className="hover:bg-foreground-primary hover:text-background-primary cursor-pointer p-6 transition-all duration-300"
+                        className="bg-foreground-primary text-background-primary hover:bg-foreground-hover cursor-pointer p-6 transition-all duration-300"
                     >
                         <a href={ExternalRoutes.BOOK_DEMO} target="_blank" rel="noopener noreferrer">
                             Book a Demo
+                            <Icons.ArrowRight className="ml-2 h-4 w-4" />
                         </a>
                     </Button>
                 </motion.div>

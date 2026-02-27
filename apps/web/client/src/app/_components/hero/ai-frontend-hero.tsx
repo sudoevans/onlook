@@ -5,13 +5,17 @@ import { motion } from 'motion/react';
 
 import { Button } from '@onlook/ui/button';
 
-import { ExternalRoutes, Routes } from '@/utils/constants';
+import { ExternalRoutes } from '@/utils/constants';
 import { useGitHubStats } from '../top-bar/github';
 import { UnicornBackground } from './unicorn-background';
 
-export function FeaturesHero() {
+export function AiFrontendHero() {
     const router = useRouter();
     const { formatted: starCount } = useGitHubStats();
+
+    const handleBookDemo = () => {
+        window.open(ExternalRoutes.BOOK_DEMO, '_blank');
+    };
 
     return (
         <div className="relative flex h-full w-full flex-col items-center justify-center gap-12 p-8 text-center text-lg">
@@ -24,26 +28,26 @@ export function FeaturesHero() {
                     transition={{ duration: 0.6, ease: 'easeOut' }}
                     style={{ willChange: 'opacity, filter', transform: 'translateZ(0)' }}
                 >
-                    Features
+                    AI for Frontend Development
                 </motion.h1>
                 <motion.p
-                    className="text-center text-4xl !leading-[1] leading-tight font-light text-balance md:text-6xl"
+                    className="text-center text-4xl !leading-[1.1] leading-tight font-light text-balance md:text-6xl"
                     initial={{ opacity: 0, filter: 'blur(4px)' }}
                     animate={{ opacity: 1, filter: 'blur(0px)' }}
                     transition={{ duration: 0.6, delay: 0.1, ease: 'easeOut' }}
                     style={{ willChange: 'opacity, filter', transform: 'translateZ(0)' }}
                 >
-                    Design with Your Real Components
+                    AI That Builds With Your Components, Not Around Them
                 </motion.p>
-                <motion.h2
+                <motion.p
                     className="text-foreground-secondary mx-auto max-w-xl text-center text-lg text-balance"
                     initial={{ opacity: 0, filter: 'blur(4px)' }}
                     animate={{ opacity: 1, filter: 'blur(0px)' }}
                     transition={{ duration: 0.6, delay: 0.15, ease: 'easeOut' }}
                     style={{ willChange: 'opacity, filter', transform: 'translateZ(0)' }}
                 >
-                    Connect your codebase. Design on the canvas. Ship PRs.
-                </motion.h2>
+                    Stop generating throwaway code. Onlook's AI is constrained to your design system — your buttons, your cards, your layouts. What you create is a PR your engineers can merge.
+                </motion.p>
                 <motion.div
                     className="mt-8"
                     initial={{ opacity: 0, filter: 'blur(4px)' }}
@@ -52,14 +56,12 @@ export function FeaturesHero() {
                     style={{ willChange: 'opacity, filter', transform: 'translateZ(0)' }}
                 >
                     <Button
-                        asChild
                         variant="secondary"
                         size="lg"
                         className="hover:bg-foreground-primary hover:text-background-primary cursor-pointer p-6 transition-all duration-300"
+                        onClick={handleBookDemo}
                     >
-                        <a href={ExternalRoutes.BOOK_DEMO} target="_blank" rel="noopener noreferrer">
-                            Book a Demo
-                        </a>
+                        Book a Demo
                     </Button>
                 </motion.div>
                 <motion.div
